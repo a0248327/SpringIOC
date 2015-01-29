@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<!-- ****************************** Spring 概述 ****************************** -->
+	<!-- 拦截器对象 -->
+	<bean id="methodBeforeAdviceImpl"
+		class="com.helloweenvsfei.spring.example.MethodBeforeAdviceImpl">
+	</bean>
+
+	<!-- 配置拦截器 -->
+	<bean id="theAdvisor"
+		class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+		<property name="advice">
+			<!-- 拦截器对象 -->
+			<ref local="methodBeforeAdviceImpl" />
+		</property>
+		<!-- 拦截所有的方法 -->
+		<property name="mappedName" value="*"></property>
+	</bean>
+
+	<!-- dao 实例 -->
+	<bean id="daoImpl" class="com.helloweenvsfei.spring.example.DaoImpl" />
+
+	<bean id="daoImplNew" class="com.helloweenvsfei.spring.example.DaoImplNew" />
+
+	<!-- service 实例 -->
+	<bean id="serviceImpl" class="com.helloweenvsfei.spring.example.ServiceImpl">
+		<property name="dao" ref="daoImpl" />
+	</bean>
+	<bean id="serviceImplNew" class="com.helloweenvsfei.spring.example.ServiceImplNew">
+		<property name="daoNew" ref="daoImplNew" />
+	</bean>
+
+	<bean id="service" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- 拦截器 -->
+		<property name="interceptorNames" value="theAdvisor" />
+		<!-- 被拦截的对象 -->
+		<property name="target">
+			<ref local="serviceImpl" />
+		</property>
+	</bean>
+
+	<!-- ****************************** Spring AOP ****************************** -->
+	<!-- 拦截器 在 withAop() 方法前运行 -->
+	<bean id="aopMethodBeforeInterceptor"
+		class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+		<property name="advice">
+			<bean class="com.helloweenvsfei.spring.aop.MethodBeforeInterceptor" />
+		</property>
+		<property name="mappedName" value="withAop"></property>
+	</bean>
+
+	<!-- 拦截器 在 withAop() 返回后运行 -->
+	<bean id="aopMethodAfterInterceptor"
+		class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+		<property name="advice">
+			<bean class="com.helloweenvsfei.spring.aop.MethodAfterInterceptor" />
+		</property>
+		<property name="mappedName" value="withAop"></property>
+	</bean>
+
+	<!-- 拦截器 在异常抛出后运行 -->
+	<bean id="aopThrowsInterceptor"
+		class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+		<property name="advice">
+			<bean class="com.helloweenvsfei.spring.aop.ThrowsInterceptor" />
+		</property>
+		<property name="mappedName" value="withAop"></property>
+	</bean>
+
+	<bean id="aopService" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- 拦截器 -->
+		<property name="interceptorNames">
+			<list>
+				<value>aopMethodBeforeInterceptor</value>
+				<value>aopMethodAfterInterceptor</value>
+				<value>aopThrowsInterceptor</value>
+			</list>
+		</property>
+		<!-- 被拦截的对象 -->
+		<property name="target">
+			<bean class="com.helloweenvsfei.spring.aop.AopServiceImpl">
+				<!-- <property name="name"><null /></property> <property name="name" 
+					value="Helloween"></property> -->
+				<property name="name" value="Helloween" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- ****************************** Spring DAO ****************************** -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/test_spring" />
+		<property name="username" value="root" />
+		<property name="password" value="" />
+	</bean>
+
+	<bean id="personDao" class="com.helloweenvsfei.spring.dao.PersonDaoImpl"
+		depends-on="dataSource" init-method="initDatabase">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- JDBC 事务管理 -->
+	<bean id="jdbcTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 为所有的方法配置事务 -->
+	<bean id="transactionAttributeSource"
+		class="org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource">
+		<property name="properties">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- <bean id="transactionRun" class="com.helloweenvsfei.spring.dao.TransactionRun"> 
+		<property name="personDao" ref="personDao"></property> </bean> -->
+
+	<!-- TransactionRun -->
+	<bean id="transactionRun"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager" ref="jdbcTransactionManager" />
+		<property name="target">
+			<bean class="com.helloweenvsfei.spring.dao.TransactionRun">
+				<property name="personDao" ref="personDao"></property>
+			</bean>
+		</property>
+		<property name="transactionAttributeSource" ref="transactionAttributeSource" />
+	</bean>
+
+	<!-- ****************************** Spring ORM ****************************** -->
+	<!-- Spring SessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
+		destroy-method="destroy">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedPackages" value="classpath:/com/helloweenvsfei/spring/orm">
+		</property>
+		<property name="annotatedClasses">
+			<list>
+				<value>com.helloweenvsfei.spring.orm.Cat</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">false</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="catDao" class="com.helloweenvsfei.spring.orm.CatDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+</beans>

@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//src/com/helloweenvsfei/spring/aop/AopServiceImpl.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/aop/MethodAfterInterceptor.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/aop/MethodBeforeInterceptor.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/aop/ThrowsInterceptor.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/dao/DaoRun.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/dao/TransactionRun.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/example/DaoImpl.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/example/DaoImplNew.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/example/IDao.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/example/MethodBeforeAdviceImpl.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/example/SpringTest.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/orm/CatDaoImpl.java=UTF-8
+encoding//src/com/helloweenvsfei/spring/orm/CatServiceImpl.java=UTF-8
